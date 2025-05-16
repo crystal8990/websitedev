@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 from PIL import Image
+#NOTE: FOR DIFF DEVICES CHANGE THE INPUT AND OUTPUT FOLDER NAMES OR DIRECTORIES BELOW
 
 # Define folder paths
 input_folder = "removebg"
