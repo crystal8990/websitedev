@@ -1,4 +1,3 @@
-
 import cv2
 import numpy as np
 import os
@@ -21,8 +20,15 @@ def remove_background(image_path, transparent_save_path):
 
     mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-    # **Apply Gaussian blur** for smooth edge transitions
-    mask = cv2.GaussianBlur(mask, (5, 5), 0)
+    # **Dynamically Adjust Gaussian Blur**
+    h, w = mask.shape[:2]
+    kernel_size = max(h, w) // 100  # Scale blur based on image size
+    kernel_size = kernel_size if kernel_size % 2 == 1 else kernel_size + 1  # Ensure odd kernel size
+
+    mask = cv2.GaussianBlur(mask, (kernel_size, kernel_size), 0)
+
+    # **Refine edges using bilateral filtering**
+    mask = cv2.bilateralFilter(mask, d=9, sigmaColor=75, sigmaSpace=75)
 
     # Convert to RGBA for transparency
     image_rgba = cv2.cvtColor(image, cv2.COLOR_BGR2BGRA)
@@ -33,8 +39,8 @@ def remove_background(image_path, transparent_save_path):
     webp_transparent_path = transparent_save_path.replace(".jpg", ".webp").replace(".png", ".webp")
     final_result_pil.save(webp_transparent_path, "WEBP", quality=90)
 
-    print(f"Processed: {os.path.basename(image_path)}")
-    print(f"Saved Transparent WebP: {webp_transparent_path}")
+    print(f"✅ Processed: {os.path.basename(image_path)}")
+    print(f"✅ Saved Transparent WebP: {webp_transparent_path}")
 
 # Process all images in the "removebg" folder
 for filename in os.listdir(input_folder):
@@ -43,7 +49,4 @@ for filename in os.listdir(input_folder):
         transparent_output_path = os.path.join(output_folder_transparent, filename)
         remove_background(input_path, transparent_output_path)
 
-print("All images processed with Gaussian blur & transparent background removal! 🚀")
-
-
-# FULLY WORKS FOR WHITE BACKGROUNDS AND CONTRASTING COLORS ON A WHITE BACKGROUND BUT NEEDS IMPROVEMENT FOR WHITE OBJECTS ON A BLACK BACKGROUND
+print("🎉 All images processed with improved Gaussian blur & edge refinement! 🚀")
